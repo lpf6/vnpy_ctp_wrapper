@@ -1,8 +1,11 @@
+import logging
 from typing import Dict, List, Any
 
 import rpyc
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest
+
+from .utils import log
 
 
 class CtpGatewayServices(rpyc.Service):
@@ -93,6 +96,10 @@ if __name__ == "__main__":
     parser.add_argument('-v', "--verbose", default=False, action="store_true",
                         help='Enable log')
     args = parser.parse_args()
+    try:
+        from vnpy_ctp import CtpGateway
+    except ImportError:
+        log.error("Not install vnpy_ctp")
     from rpyc.utils.server import ThreadedServer
     if args.test:
         from ctp_gateway_log import CtpGatewayTest

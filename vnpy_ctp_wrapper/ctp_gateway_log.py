@@ -4,7 +4,7 @@ from vnpy.event import EventEngine
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-
+from .utils import log
 class CtpGatewayLog(BaseGateway):
     """
     VeighNa用于对接期货CTP柜台的交易接口。
@@ -24,9 +24,9 @@ class CtpGatewayLog(BaseGateway):
         val = super().__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):
-                print("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
+                log.debug("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
                 if self.ctp_gateway is None:
-                    print("impl is None")
+                    log.error("impl ctp_gateway is None")
                     return None
                 return self.ctp_gateway.__getattribute__(attr)(*args, **kwargs)
             return fun
@@ -67,7 +67,7 @@ class CtpGatewayTest(BaseGateway):
         val = super().__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):
-                print("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
+                log.info("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
                 super(CtpGatewayTest, self).__getattribute__('on_event')(val.__name__, [args, kwargs])
                 return None
             return fun

@@ -4,7 +4,7 @@ from vnpy.event import EventEngine
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from .utils import log
+from utils import log
 class CtpGatewayLog(BaseGateway):
     """
     VeighNa用于对接期货CTP柜台的交易接口。

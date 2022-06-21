@@ -2,7 +2,7 @@ import logging
 
 
 def get_log():
-    logging.getLogger("vnpy_ctp_wrapper")
+    log = logging.getLogger("vnpy_ctp_wrapper")
     log.setLevel(logging.DEBUG)
     fh = logging.FileHandler('vnpy_ctp_wrapper.log')
     fh.setLevel(logging.DEBUG)

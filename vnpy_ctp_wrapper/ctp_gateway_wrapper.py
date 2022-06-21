@@ -5,7 +5,7 @@ import rpyc
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest
 
-from vnpy_ctp_wrapper.utils import log
+from utils import log
 
 
 class CtpGatewayServices(rpyc.Service):

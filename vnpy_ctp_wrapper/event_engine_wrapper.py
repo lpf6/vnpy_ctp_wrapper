@@ -6,7 +6,7 @@ from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from vnpy_ctp_wrapper.utils import log
+from utils import log
 
 
 def print_call():

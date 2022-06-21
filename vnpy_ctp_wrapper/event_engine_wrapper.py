@@ -1,8 +1,12 @@
+import argparse
+
 import rpyc
 from vnpy.event.engine import HandlerType, Event, EventEngine
 from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
+
+from vnpy_ctp_wrapper.utils import log
 
 
 def print_call():
@@ -41,8 +45,16 @@ class EventEngineService(rpyc.Service):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Start vtp wrapper client')
+    parser.add_argument('-n', "--hostname", default="0.0.0.0", type=str,
+                        help='hostname')
+    parser.add_argument('-p', "--port", default=18861, type=int,
+                        help='port')
+    args = parser.parse_args()
+    log.info("Client run with args: %s" % args)
+
     service = EventEngineService(EventEngineLog(), "test")
-    conn = rpyc.connect("localhost", 18861, service=service, config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
+    conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
     conn.root.connect({"test": "connect"})
     conn.root.query_position()
     conn.root.query_account()

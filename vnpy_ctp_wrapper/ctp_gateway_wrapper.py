@@ -5,7 +5,7 @@ import rpyc
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest
 
-from utils import log
+from vnpy_ctp_wrapper.utils import log
 
 
 class CtpGatewayServices(rpyc.Service):
@@ -95,7 +95,14 @@ if __name__ == "__main__":
                         help='Enable test callback')
     parser.add_argument('-v', "--verbose", default=False, action="store_true",
                         help='Enable log')
+    parser.add_argument('-n', "--hostname", default="0.0.0.0", type=str,
+                        help='hostname')
+    parser.add_argument('-p', "--port", default=18861, type=int,
+                        help='port')
+    parser.add_argument('-l', "--listener_timeout", default=60*10, type=int,
+                        help='port')
     args = parser.parse_args()
+    log.info("Server run with args: %s" % args)
     try:
         from vnpy_ctp import CtpGateway
     except ImportError:
@@ -108,5 +115,7 @@ if __name__ == "__main__":
         from ctp_gateway_log import CtpGatewayLog
         CtpGatewayServices.set_ctp_gateway_class(CtpGatewayLog)
 
-    t = ThreadedServer(CtpGatewayServices, port=18861, listener_timeout=60*10, protocol_config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
+    t = ThreadedServer(CtpGatewayServices, hostname=args.hostname, port=args.port,
+                       listener_timeout=args.listener_timeout,
+                       protocol_config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
     t.start()

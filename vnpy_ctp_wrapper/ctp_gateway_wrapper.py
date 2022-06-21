@@ -4,14 +4,25 @@ import rpyc
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest
 
-from vnpy_ctp import CtpGatewayLog as CtpGateway
-
 
 class CtpGatewayServices(rpyc.Service):
 
+    ctp_gateway_class = None
+
+    @staticmethod
+    def get_ctp_gateway_class():
+        if CtpGatewayServices.ctp_gateway_class is None:
+            from vnpy_ctp import CtpGateway
+            CtpGatewayServices.ctp_gateway_class = CtpGateway
+        return CtpGatewayServices.ctp_gateway_class
+
+    @staticmethod
+    def set_ctp_gateway_class(clazz):
+        CtpGatewayServices.ctp_gateway_class = clazz
+
     def __init__(self):
         self._conn = None
-        self._ctp_gateway: CtpGateway = None
+        self._ctp_gateway = None
 
     def on_connect(self, conn):
         self._conn = conn
@@ -24,7 +35,7 @@ class CtpGatewayServices(rpyc.Service):
 
     def get_ctp_gateway(self):
         if self._ctp_gateway is None and self._conn is not None:
-            self._ctp_gateway = CtpGateway(self._conn.root, self._conn.root.get_ctp_gateway_name())
+            self._ctp_gateway = CtpGatewayServices.get_ctp_gateway_class()(self._conn.root, self._conn.root.get_ctp_gateway_name())
         return self._ctp_gateway
 
     def exposed_connect(self, setting: dict) -> None:
@@ -57,10 +68,6 @@ class CtpGatewayServices(rpyc.Service):
             self._ctp_gateway.close()
             self._ctp_gateway = None
 
-    def exposed_write_error(self, msg: str, error: dict) -> None:
-        """输出错误信息日志"""
-        return self.get_ctp_gateway().write_error(msg, error)
-
     def exposed_on_order(self, order: OrderData) -> None:
         return self.get_ctp_gateway().on_order(order)
 
@@ -78,7 +85,21 @@ class CtpGatewayServices(rpyc.Service):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Start vtp wrapper server')
+    parser.add_argument('-t', "--test", default=False, action="store_true",
+                        help='Enable test callback')
+    parser.add_argument('-v', "--verbose", default=False, action="store_true",
+                        help='Enable log')
+    args = parser.parse_args()
     from rpyc.utils.server import ThreadedServer
+    if args.test:
+        from ctp_gateway_log import CtpGatewayTest
+        CtpGatewayServices.set_ctp_gateway_class(CtpGatewayTest)
+    elif args.verbose:
+        from ctp_gateway_log import CtpGatewayLog
+        CtpGatewayServices.set_ctp_gateway_class(CtpGatewayLog)
 
     t = ThreadedServer(CtpGatewayServices, port=18861, listener_timeout=60*10, protocol_config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
     t.start()

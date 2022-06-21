@@ -8,8 +8,6 @@ from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 def print_call():
     def decorate(fn):
         print(fn.__name__)
-        for item in kwds.items():
-            print(item)
         return fn
     return decorate
 
@@ -46,7 +44,6 @@ if __name__ == "__main__":
     service = EventEngineService(EventEngineLog(), "test")
     conn = rpyc.connect("localhost", 18861, service=service, config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
     conn.root.connect({"test": "connect"})
-    conn.root.write_error("test", {})
     conn.root.query_position()
     conn.root.query_account()
     conn.root.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))

@@ -11,7 +11,7 @@ from utils import log
 
 def print_call():
     def decorate(fn):
-        print(fn.__name__)
+        log.info(fn.__name__)
         return fn
     return decorate
 
@@ -19,13 +19,13 @@ def print_call():
 class EventEngineLog:
 
     def register(self, _type: str, handler: HandlerType) -> None:
-        print("register %s, %s" % (_type, handler))
+        log.info("register %s, %s" % (_type, handler))
 
     def put(self, event: Event) -> None:
-        print("put %s, %s" % (event.type, event.data))
+        log.info("put %s, %s" % (event.type, event.data))
 
     def get_ctp_gateway_name(self):
-        print("get_ctp_gateway_name")
+        log.info("get_ctp_gateway_name")
 
 
 class EventEngineService(rpyc.Service):

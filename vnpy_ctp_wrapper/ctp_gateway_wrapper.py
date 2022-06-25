@@ -2,30 +2,19 @@ import logging
 from typing import Dict, List, Any
 
 import rpyc
+from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
-    HistoryRequest
+    HistoryRequest, ContractData, LogData, QuoteData, AccountData, PositionData, TradeData, TickData
 
 from utils import log
 
 
-class CtpGatewayServices(rpyc.Service):
+class GatewayServices(rpyc.Service):
 
-    ctp_gateway_class = None
-
-    @staticmethod
-    def get_ctp_gateway_class():
-        if CtpGatewayServices.ctp_gateway_class is None:
-            from vnpy_ctp import CtpGateway
-            CtpGatewayServices.ctp_gateway_class = CtpGateway
-        return CtpGatewayServices.ctp_gateway_class
-
-    @staticmethod
-    def set_ctp_gateway_class(clazz):
-        CtpGatewayServices.ctp_gateway_class = clazz
-
-    def __init__(self):
+    def __init__(self, clazz):
         self._conn = None
         self._ctp_gateway = None
+        self._clazz = clazz
 
     def on_connect(self, conn):
         self._conn = conn
@@ -36,10 +25,40 @@ class CtpGatewayServices(rpyc.Service):
             self.exposed_close()
         self._conn = None
 
-    def get_ctp_gateway(self):
+    def get_ctp_gateway(self) -> BaseGateway:
         if self._ctp_gateway is None and self._conn is not None:
-            self._ctp_gateway = CtpGatewayServices.get_ctp_gateway_class()(self._conn.root, self._conn.root.get_ctp_gateway_name())
+            self._ctp_gateway = self._clazz(self._conn.root, self._conn.root.get_ctp_gateway_name())
         return self._ctp_gateway
+
+    def exposed_on_event(self, type: str, data: Any = None) -> None:
+        return self.get_ctp_gateway().on_event(type, data)
+
+    def exposed_on_tick(self, tick: TickData) -> None:
+        return self.get_ctp_gateway().on_tick(tick)
+
+    def exposed_on_trade(self, trade: TradeData) -> None:
+        return self.get_ctp_gateway().on_trade(trade)
+
+    def exposed_on_order(self, order: OrderData) -> None:
+        return self.get_ctp_gateway().on_order(order)
+
+    def exposed_on_position(self, position: PositionData) -> None:
+        return self.get_ctp_gateway().on_position(position)
+
+    def exposed_on_account(self, account: AccountData) -> None:
+        return self.get_ctp_gateway().on_account(account)
+
+    def exposed_on_quote(self, quote: QuoteData) -> None:
+        return self.get_ctp_gateway().on_quote(quote)
+
+    def exposed_on_log(self, log: LogData) -> None:
+        return self.get_ctp_gateway().on_log(log)
+
+    def exposed_on_contract(self, contract: ContractData) -> None:
+        return self.get_ctp_gateway().on_contract(contract)
+
+    def exposed_write_log(self, msg: str) -> None:
+        return self.get_ctp_gateway().write_log(msg)
 
     def exposed_connect(self, setting: dict) -> None:
         """连接交易接口"""
@@ -85,6 +104,34 @@ class CtpGatewayServices(rpyc.Service):
 
     def exposed_get_default_setting(self) -> Dict[str, Any]:
         return self.get_ctp_gateway().get_default_setting()
+
+
+class CtpGatewayServices(GatewayServices):
+
+    ctp_gateway_class = None
+
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError as e:
+            try:
+                return getattr(self.get_ctp_gateway(), name)
+            except AttributeError:
+                raise e
+
+    @staticmethod
+    def get_ctp_gateway_class():
+        if CtpGatewayServices.ctp_gateway_class is None:
+            from vnpy_ctp import CtpGateway
+            CtpGatewayServices.ctp_gateway_class = CtpGateway
+        return CtpGatewayServices.ctp_gateway_class
+
+    @staticmethod
+    def set_ctp_gateway_class(clazz):
+        CtpGatewayServices.ctp_gateway_class = clazz
+
+    def __init__(self):
+        super().__init__(CtpGatewayServices.get_ctp_gateway_class())
 
 
 if __name__ == "__main__":

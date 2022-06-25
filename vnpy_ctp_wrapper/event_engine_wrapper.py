@@ -1,4 +1,7 @@
 import argparse
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
 
 import rpyc
 from vnpy.event.engine import HandlerType, Event, EventEngine
@@ -6,7 +9,7 @@ from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from utils import log
+from vnpy_ctp_wrapper.utils import log
 
 
 def print_call():

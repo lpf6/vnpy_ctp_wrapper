@@ -32,7 +32,3 @@ class GatewayProxy:
     def __delattr__(self, name):
         delattr(self.__gp__obj, name)
 
-    def close(self) -> None:
-        self.__gp__obj.close()
-        self.__gp__conn.close()
-

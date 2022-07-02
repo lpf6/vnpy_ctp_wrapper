@@ -30,7 +30,19 @@ class CtpGatewayLog(BaseGateway):
                     return None
                 return self.ctp_gateway.__getattribute__(attr)(*args, **kwargs)
             return fun
-        return val
+        if attr == "ctp_gateway" or attr.startswith("__"):
+            return val
+
+        log.debug("get name: %s, val: %s" % (attr, val))
+        if self.ctp_gateway is None:
+            log.error("impl ctp_gateway is None")
+            return None
+        return self.ctp_gateway.__getattribute__(attr)
+
+    def __setattr__(self, key, value):
+        if key == "ctp_gateway" or key.startswith("__"):
+            return super().__setattr__(key, value)
+        return self.ctp_gateway.__setattr__(key, value)
 
     def connect(self, setting: dict) -> None:
         pass

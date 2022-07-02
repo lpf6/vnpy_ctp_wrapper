@@ -5,7 +5,7 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy_ctp_wrapper.event_engine_wrapper import EventEngineService
 
 
-def create_proxy_gateway(event_engine: EventEngine, hostname: str, port: int):
+def create_proxy_gateway(hostname: str, port: int):
     class Proxy(GatewayProxy):
         def __init__(self, event_engine: EventEngine, gateway_name: str):
             super().__init__(event_engine, gateway_name, hostname, port)

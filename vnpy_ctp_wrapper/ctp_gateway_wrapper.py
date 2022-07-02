@@ -15,15 +15,26 @@ class GatewayServices(rpyc.Service):
         self._conn = None
         self._ctp_gateway = None
         self._clazz = clazz
+        self.exposed_exchanges = []
+        self.exposed_default_name: str = ""
+        self.exposed_default_setting: Dict[str, Any] = {}
+        self.exposed_gateway_name: str = ""
 
     def on_connect(self, conn):
         self._conn = conn
-        self._conn.root.get_ctp_gateway_name()
+        self.exposed_exchanges = self.get_ctp_gateway().exchanges
+        self.exposed_default_name = self.get_ctp_gateway().default_name
+        self.exposed_default_setting: Dict[str, Any] = self.get_ctp_gateway().default_setting
+        self.exposed_gateway_name: str = self.get_ctp_gateway().gateway_name
 
     def on_disconnect(self, conn):
         if self._ctp_gateway is not None:
             self.exposed_close()
         self._conn = None
+        self.exposed_exchanges = []
+        self.exposed_default_name: str = ""
+        self.exposed_default_setting: Dict[str, Any] = {}
+        self.exposed_gateway_name: str = ""
 
     def get_ctp_gateway(self) -> BaseGateway:
         if self._ctp_gateway is None and self._conn is not None:

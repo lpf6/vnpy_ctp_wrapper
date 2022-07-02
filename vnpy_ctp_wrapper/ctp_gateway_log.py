@@ -5,44 +5,44 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
 from utils import log
-class CtpGatewayLog(BaseGateway):
+class CtpGatewayLog:
     """
     VeighNa用于对接期货CTP柜台的交易接口。
     """
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""
-        super().__init__(event_engine, gateway_name)
-        self.ctp_gateway = None
+        self.gateway = None
         try:
             from vnpy_ctp import CtpGateway
-            self.ctp_gateway = CtpGateway(event_engine, gateway_name)
+            self.gateway = CtpGateway(event_engine, gateway_name)
         except ImportError as e:
             pass
 
     def __getattribute__(self, attr):
-        val = super().__getattribute__(attr)
+        if attr == "gateway" or attr.startswith("__"):
+            return super().__getattribute__(attr)
+        if self.gateway is None:
+            log.error("impl gateway is None")
+            return None
+
+        val = self.gateway.__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):
                 log.debug("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
-                if self.ctp_gateway is None:
-                    log.error("impl ctp_gateway is None")
+                if self.gateway is None:
+                    log.error("impl gateway is None")
                     return None
-                return self.ctp_gateway.__getattribute__(attr)(*args, **kwargs)
+                return val(*args, **kwargs)
             return fun
-        if attr == "ctp_gateway" or attr.startswith("__"):
-            return val
 
         log.debug("get name: %s, val: %s" % (attr, val))
-        if self.ctp_gateway is None:
-            log.error("impl ctp_gateway is None")
-            return None
-        return self.ctp_gateway.__getattribute__(attr)
+        return val
 
     def __setattr__(self, key, value):
-        if key == "ctp_gateway" or key.startswith("__"):
+        if key == "gateway" or key.startswith("__"):
             return super().__setattr__(key, value)
-        return self.ctp_gateway.__setattr__(key, value)
+        return self.gateway.__setattr__(key, value)
 
     def connect(self, setting: dict) -> None:
         pass

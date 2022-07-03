@@ -2,9 +2,9 @@ import logging
 
 
 def get_log():
-    log = logging.getLogger("vnpy_ctp_wrapper")
+    log = logging.getLogger("vnpy_gateway_wrapper")
     log.setLevel(logging.DEBUG)
-    fh = logging.FileHandler('vnpy_ctp_wrapper.log')
+    fh = logging.FileHandler('vnpy_gateway_wrapper.log')
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()

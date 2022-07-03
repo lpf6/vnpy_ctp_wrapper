@@ -9,7 +9,7 @@ from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from vnpy_ctp_wrapper.utils import log
+from vnpy_gateway_wrapper.utils import log
 
 
 def print_call():
@@ -27,8 +27,8 @@ class EventEngineLog:
     def put(self, event: Event) -> None:
         log.info("put %s, %s" % (event.type, event.data))
 
-    def get_ctp_gateway_name(self):
-        log.info("get_ctp_gateway_name")
+    def get_gateway_name(self):
+        log.info("get_gateway_name")
 
 
 class EventEngineService(rpyc.Service):
@@ -43,7 +43,7 @@ class EventEngineService(rpyc.Service):
     def exposed_put(self, event: Event) -> None:
         self.event_engine.put(event)
 
-    def exposed_get_ctp_gateway_name(self):
+    def exposed_get_gateway_name(self):
         return self.gateway_name
 
 

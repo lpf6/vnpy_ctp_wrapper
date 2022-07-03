@@ -5,11 +5,11 @@ import os
 import sys
 sys.path.append(os.path.dirname(__file__))
 
-# from vnpy_ctp_wrapper import CtpGateway
+# from vnpy_gateway_wrapper import CtpGateway
 from vnpy_ctastrategy import CtaStrategyApp
 from vnpy_ctabacktester import CtaBacktesterApp
 
-from vnpy_ctp_wrapper.ctp_gateway_proxy import create_proxy_gateway
+from vnpy_gateway_wrapper.gateway_proxy import create_proxy_gateway
 
 
 def main():

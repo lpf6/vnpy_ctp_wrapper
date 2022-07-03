@@ -5,19 +5,25 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
 from utils import log
-class CtpGatewayLog:
+
+
+def get_log_class(clazz):
+    class LogGateway(GatewayLog):
+        def __init__(self, event_engine: EventEngine, gateway_name: str):
+            super().__init__(clazz, event_engine, gateway_name)
+    return LogGateway
+
+
+class GatewayLog:
     """
     VeighNa用于对接期货CTP柜台的交易接口。
     """
 
-    def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
+    def __init__(self, clazz, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""
         self.gateway = None
-        try:
-            from vnpy_ctp import CtpGateway
-            self.gateway = CtpGateway(event_engine, gateway_name)
-        except ImportError as e:
-            pass
+        if clazz is not None:
+            self.gateway = clazz(event_engine, gateway_name)
 
     def __getattribute__(self, attr):
         if attr == "gateway" or attr.startswith("__"):
@@ -44,29 +50,8 @@ class CtpGatewayLog:
             return super().__setattr__(key, value)
         return self.gateway.__setattr__(key, value)
 
-    def connect(self, setting: dict) -> None:
-        pass
 
-    def close(self) -> None:
-        pass
-
-    def subscribe(self, req: SubscribeRequest) -> None:
-        pass
-
-    def send_order(self, req: OrderRequest) -> str:
-        pass
-
-    def cancel_order(self, req: CancelRequest) -> None:
-        pass
-
-    def query_account(self) -> None:
-        pass
-
-    def query_position(self) -> None:
-        pass
-
-
-class CtpGatewayTest(BaseGateway):
+class GatewayTest(BaseGateway):
     """
     VeighNa用于对接期货CTP柜台的交易接口。
     """
@@ -80,7 +65,7 @@ class CtpGatewayTest(BaseGateway):
         if callable(val):
             def fun(*args, **kwargs):
                 log.info("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
-                super(CtpGatewayTest, self).__getattribute__('on_event')(val.__name__, [args, kwargs])
+                super(GatewayTest, self).__getattribute__('on_event')(val.__name__, [args, kwargs])
                 return None
             return fun
         return val

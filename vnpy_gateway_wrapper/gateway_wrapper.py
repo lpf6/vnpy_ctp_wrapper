@@ -147,7 +147,7 @@ class CtpGatewayServices(GatewayServices):
                 raise e
 
     @staticmethod
-    def get_gateway_class() -> Dict[str: object]:
+    def get_gateway_class_map() -> dict:
         if CtpGatewayServices.gateway_class is None:
             CtpGatewayServices.gateway_class = {}
             try:
@@ -168,7 +168,7 @@ class CtpGatewayServices(GatewayServices):
         CtpGatewayServices.gateway_class = clazz
 
     def __init__(self):
-        super().__init__(CtpGatewayServices.get_gateway_class(), CtpGatewayServices.is_log, CtpGatewayServices.is_test)
+        super().__init__(CtpGatewayServices.get_gateway_class_map(), CtpGatewayServices.is_log, CtpGatewayServices.is_test)
 
 
 if __name__ == "__main__":

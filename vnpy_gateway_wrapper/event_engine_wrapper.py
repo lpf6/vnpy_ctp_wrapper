@@ -8,7 +8,7 @@ from vnpy.event.engine import HandlerType, Event, EventEngine
 from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from vnpy_gateway_wrapper.utils import log
+from utils import log
 
 
 def print_call():

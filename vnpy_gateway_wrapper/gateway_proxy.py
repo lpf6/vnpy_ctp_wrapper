@@ -2,7 +2,7 @@ import rpyc
 from vnpy.event import EventEngine
 from vnpy.trader.gateway import BaseGateway
 
-from vnpy_gateway_wrapper.event_engine_wrapper import EventEngineService
+from event_engine_wrapper import EventEngineService
 
 
 def create_proxy_gateway(hostname: str, port: int):

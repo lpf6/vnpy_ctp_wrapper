@@ -7,8 +7,8 @@ from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest, ContractData, LogData, QuoteData, AccountData, PositionData, TradeData, TickData
 
-from utils import log
-from gateway_log import get_log_class, GatewayTest
+from .utils import log
+from .gateway_log import get_log_class, GatewayTest
 
 
 class GatewayServices(rpyc.Service):

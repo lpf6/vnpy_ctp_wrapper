@@ -6,7 +6,6 @@ sys.path.append(os.path.dirname(__file__))
 import rpyc
 from vnpy.event.engine import HandlerType, Event, EventEngine
 from vnpy.trader.constant import Exchange, Direction, OrderType
-from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
 from vnpy_gateway_wrapper.utils import log
@@ -65,3 +64,4 @@ if __name__ == "__main__":
     conn.root.send_order(OrderRequest("testOrder", Exchange.COMEX, Direction.LONG, OrderType.LIMIT, 12345, 12.23))
     conn.root.cancel_order(CancelRequest("1234", "testOrder", Exchange.COMEX))
     conn.root.close()
+    conn.close()

@@ -23,6 +23,7 @@ class GatewayLog:
         """构造函数"""
         self.gateway = None
         if clazz is not None:
+            log.info("impl gateway is: %s" % clazz)
             self.gateway = clazz(event_engine, gateway_name)
 
     def __getattribute__(self, attr):

@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 from typing import Dict, List, Any
 
@@ -19,7 +20,7 @@ class GatewayServices(rpyc.Service):
         self._is_log = is_log
         self._is_test = is_test
         self._clazz_map = clazz_map
-        self._clazz = clazz_map[self._name]
+        self._clazz = None
         self.exposed_exchanges = []
         self.exposed_default_name: str = ""
         self.exposed_default_setting: Dict[str, Any] = {}
@@ -52,7 +53,9 @@ class GatewayServices(rpyc.Service):
         self._name: str = self._conn.root.get_gateway_name()
         if self._name is not None:
             self._name = self._name.lower()
-        self._clazz = self._clazz_map[self._name.lower()]
+        if self._name not in self._clazz_map:
+            raise KeyError("Gateway %s not support!" % self._name)
+        self._clazz = self._clazz_map[self._name]
         return get_log_class(self._clazz) if self._is_log else self._clazz
 
     def exposed_on_event(self, type: str, data: Any = None) -> None:
@@ -133,7 +136,7 @@ class GatewayServices(rpyc.Service):
 
 class CtpGatewayServices(GatewayServices):
 
-    gateway_class: None
+    gateway_class = None
     is_log = False
     is_test = False
 
@@ -160,6 +163,7 @@ class CtpGatewayServices(GatewayServices):
                 CtpGatewayServices.gateway_class["tts"] = TtsGateway
             except ImportError:
                 log.error("Not install vnpy-tts")
+            CtpGatewayServices.gateway_class["test"] = GatewayTest
 
         return CtpGatewayServices.gateway_class
 

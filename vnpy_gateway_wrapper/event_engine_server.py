@@ -11,6 +11,7 @@ from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, Or
     HistoryRequest, ContractData, LogData, QuoteData, AccountData, PositionData, TradeData, TickData
 
 from .utils import log
+from .service import ConstraintsService, ConstraintsProxy
 
 
 def print_call():
@@ -21,7 +22,6 @@ def print_call():
 
 
 class EventEngineLog:
-
     def register(self, _type: str, handler: HandlerType) -> None:
         log.info("register %s, %s" % (_type, handler))
 
@@ -32,33 +32,11 @@ class EventEngineLog:
         log.info("get_gateway_name")
 
 
-DATA_CLASSES = [SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData,
-                HistoryRequest, ContractData, LogData, QuoteData, AccountData, PositionData, TradeData, TickData]
-DATA_CLASS_MAP = {d.__name__: d for d in DATA_CLASSES}
-
-
-class EventEngineService(rpyc.Service):
+class EventEngineService(ConstraintsService):
 
     def __init__(self, event_engine: EventEngine, gateway_name: str):
-        self.event_engine = event_engine
+        super(EventEngineService, self).__init__(event_engine)
         self.gateway_name = gateway_name
-
-    def exposed_register(self, _type: str, handler: HandlerType) -> None:
-        self.event_engine.register(_type, handler)
-
-    def exposed_put(self, event: Event) -> None:
-        json_data = json.loads(event.data)
-        _type = json_data["type"]
-        if _type == 'str':
-            data = json_data["data"]
-        elif _type in DATA_CLASS_MAP:
-            clazz = DATA_CLASS_MAP[_type]
-            data = clazz.from_fict(json_data["data"])
-        else:
-            data = json_data["data"]
-
-        decoded_event = Event(event.type, data)
-        self.event_engine.put(decoded_event)
 
     def exposed_get_gateway_name(self):
         return self.gateway_name
@@ -74,12 +52,14 @@ if __name__ == "__main__":
     log.info("Client run with args: %s" % args)
 
     service = EventEngineService(EventEngineLog(), "test")
-    conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10, 'allow_public_attrs': True})
-    conn.root.connect({"test": "connect"})
-    conn.root.query_position()
-    conn.root.query_account()
-    conn.root.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))
-    conn.root.send_order(OrderRequest("testOrder", Exchange.COMEX, Direction.LONG, OrderType.LIMIT, 12345, 12.23))
-    conn.root.cancel_order(CancelRequest("1234", "testOrder", Exchange.COMEX))
-    conn.root.close()
+    conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10})
+    proxy = ConstraintsProxy(conn.root)
+
+    proxy.connect({"test": "connect"})
+    proxy.query_position()
+    proxy.query_account()
+    proxy.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))
+    proxy.send_order(OrderRequest("testOrder", Exchange.COMEX, Direction.LONG, OrderType.LIMIT, 12345, 12.23))
+    proxy.cancel_order(CancelRequest("1234", "testOrder", Exchange.COMEX))
+    proxy.close()
     conn.close()

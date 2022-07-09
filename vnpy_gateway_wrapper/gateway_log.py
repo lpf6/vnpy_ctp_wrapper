@@ -14,7 +14,7 @@ def get_log_class(clazz):
     return LogGateway
 
 
-class GatewayLog:
+class GatewayLog(BaseGateway):
     """
     VeighNa用于对接期货CTP柜台的交易接口。
     """
@@ -51,6 +51,27 @@ class GatewayLog:
             return super().__setattr__(key, value)
         return self.gateway.__setattr__(key, value)
 
+    def connect(self, setting: dict) -> None:
+        pass
+
+    def close(self) -> None:
+        pass
+
+    def subscribe(self, req: SubscribeRequest) -> None:
+        pass
+
+    def send_order(self, req: OrderRequest) -> str:
+        pass
+
+    def cancel_order(self, req: CancelRequest) -> None:
+        pass
+
+    def query_account(self) -> None:
+        pass
+
+    def query_position(self) -> None:
+        pass
+
 
 class GatewayTest(BaseGateway):
     """
@@ -62,6 +83,8 @@ class GatewayTest(BaseGateway):
         super().__init__(event_engine, gateway_name)
 
     def __getattribute__(self, attr):
+        if attr.startswith("__"):
+            return super().__getattribute__(attr)
         val = super().__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):

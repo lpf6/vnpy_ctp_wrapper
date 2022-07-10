@@ -86,7 +86,8 @@ class ConstraintsService(rpyc.Service):
 
     def exposed_get_dict(self):
         log.debug("Server Get dict")
-        return self.format_dict
+        format_dict = self.format_dict
+        return pickle.dumps(format_dict)
 
     def exposed_call(self, method, args, kwargs):
         if method in self.format_dict:
@@ -101,7 +102,8 @@ class ConstraintsService(rpyc.Service):
         raise ValueError("Method %s is not found!" % method)
 
     def exposed_get(self, name):
-        return getattr(self.obj, name)
+        value = getattr(self.obj, name)
+        return pickle.dumps(value)
 
 
 class ConstraintsProxy:
@@ -113,7 +115,8 @@ class ConstraintsProxy:
 
     def __init(self):
         log.debug("Get dict")
-        self.__format_dict = self.__service.get_dict()
+        p_format_dict = self.__service.get_dict()
+        self.__format_dict = pickle.loads(p_format_dict)
         if self.__format_dict is None:
             self.__format_dict = {}
 
@@ -145,6 +148,7 @@ class ConstraintsProxy:
                 return func
             else:
                 log.debug("Server[%s]: Get remote variable %s success" % (self.__name, item))
-                return self.__service.get(item)
+                value = self.__service.get(item)
+                return pickle.loads(value)
         else:
             raise AttributeError("Unknown attr %s!" % item)

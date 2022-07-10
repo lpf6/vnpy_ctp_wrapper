@@ -96,7 +96,8 @@ class ConstraintsService(rpyc.Service):
                 _method = value
                 _args = pickle.loads(args)
                 _kwargs = pickle.loads(kwargs)
-                return _method(*_args, **_kwargs)
+                _ret = _method(*_args, **_kwargs)
+                return pickle.dumps(_ret)
             else:
                 raise ValueError("Method %s is not callable!" % method)
         raise ValueError("Method %s is not found!" % method)
@@ -144,7 +145,8 @@ class ConstraintsProxy:
                     log.debug("Server[%s]: Call remote callable %s success" % (self.__name, item))
                     _args = pickle.dumps(args)
                     _kwargs = pickle.dumps(kwargs)
-                    return service.call(item, _args, _kwargs)
+                    _ret = service.call(item, _args, _kwargs)
+                    return pickle.loads(_ret)
                 return func
             else:
                 log.debug("Server[%s]: Get remote variable %s success" % (self.__name, item))

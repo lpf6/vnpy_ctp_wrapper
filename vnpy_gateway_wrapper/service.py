@@ -28,6 +28,7 @@ class ConstraintsService(rpyc.Service):
 
     def _init_obj(self):
         if self._obj is None:
+            log.debug("Create new obj")
             self._obj = self.create_obj()
             if self._obj is None:
                 log.error("Service[%s] on_connect a None obj! " % self.__class__.__name__)
@@ -42,13 +43,17 @@ class ConstraintsService(rpyc.Service):
     def clazz(self):
         if self._clazz is None:
             if self._obj is not None:
+                log.debug("Get clazz from obj")
                 self._clazz = self._obj.__class__
             else:
+                log.debug("Get clazz")
                 self._clazz = self.get_clazz()
+                log.debug("Get clazz success")
         return self._clazz
 
     def _init_format_dict(self):
         if self.clazz is None:
+            log.debug("Get dict class is None!")
             self._format_dict = {}
             return
 
@@ -60,6 +65,7 @@ class ConstraintsService(rpyc.Service):
             v = getattr(self.clazz, d)
             format_dict[d] = "callable" if callable(v) else "variable"
         self._format_dict = format_dict
+        log.debug("Get dict class is None! %s" % self._format_dict)
 
     @property
     def format_dict(self):
@@ -79,6 +85,7 @@ class ConstraintsService(rpyc.Service):
         self._conn = None
 
     def exposed_get_dict(self):
+        log.debug("Server Get dict")
         return self.format_dict
 
     def exposed_call(self, method, args, kwargs):

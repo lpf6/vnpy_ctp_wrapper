@@ -55,7 +55,7 @@ if __name__ == "__main__":
     log.info("Client run with args: %s" % args)
 
     service = EventEngineService(EventEngineLog(), "test")
-    conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10})
+    conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10, "allow_pickle": True})
     proxy = ConstraintsProxy(conn.root)
     print(proxy.exchanges)
     proxy.connect({"test": "connect"})

@@ -91,5 +91,5 @@ if __name__ == "__main__":
 
     t = ThreadedServer(CtpGatewayServices, hostname=args.hostname, port=args.port,
                        listener_timeout=args.listener_timeout,
-                       protocol_config={"sync_request_timeout": 60*10})
+                       protocol_config={"sync_request_timeout": 60*10, "allow_pickle": True})
     t.start()

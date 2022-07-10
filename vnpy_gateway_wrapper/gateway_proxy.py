@@ -20,7 +20,7 @@ def create_proxy_gateway(hostname: str, port: int):
 class GatewayProxy(BaseGateway):
     def __init__(self, event_engine: EventEngine, gateway_name: str, hostname: str, port: int):
         self.__gp__conn = rpyc.connect(hostname, port, service=EventEngineService(event_engine, gateway_name),
-                            config={"sync_request_timeout": 60 * 10})
+                            config={"sync_request_timeout": 60 * 10, "allow_pickle": True})
         self.__gp__obj = ConstraintsProxy(self.__gp__conn.root)
 
     def __getattribute__(self, name):

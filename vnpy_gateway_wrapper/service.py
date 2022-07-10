@@ -1,10 +1,117 @@
 import abc
+import copy
+import dataclasses
 import pickle
-import time
+from typing import Callable, Dict, List
 
 import rpyc
 
 from vnpy_gateway_wrapper.utils import log
+
+
+simple_types = tuple([type(None), int, bool, float, bytes, str, complex, type(NotImplemented), type(Ellipsis)])
+callable_index = 0
+
+
+def get_and_increase_index():
+    global callable_index
+    callable_index+=1
+    return callable_index
+
+
+@dataclasses.dataclass
+class Key:
+    index = get_and_increase_index()
+
+    def __hash__(self):
+        return self.index
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.index == other.index
+
+
+@dataclasses.dataclass
+class CallableKey(Key):
+    def __hash__(self):
+        return super().__hash__()
+
+
+@dataclasses.dataclass
+class VariableKey(Key):
+    def __hash__(self):
+        return super().__hash__()
+
+
+class CallableProxy:
+    def __init__(self, server, key: CallableKey):
+        self.__key = key
+        self.__server = server
+
+    def __call__(self, *args, **kwargs):
+        self.__server.call_callable(self.__key, *args, **kwargs)
+
+
+class CallableCallback(abc.ABC):
+
+    @abc.abstractmethod
+    def callback_callable(self, key: CallableKey, *args, **kwargs):
+        pass
+
+
+def encode(value, nopickle_data: Dict[int, None]):
+    if isinstance(value, simple_types):
+        return value
+    if isinstance(value, tuple):
+        return tuple(encode(v, nopickle_data) for v in value)
+    if isinstance(value, list):
+        return list(encode(v, nopickle_data) for v in value)
+    if isinstance(value, dict):
+        return dict({encode(k, nopickle_data): encode(v, nopickle_data) for k, v in value.items()})
+    if dataclasses.is_dataclass(value):
+        return value.__class__(**encode(dataclasses.asdict(value), nopickle_data))
+    if callable(value):
+        key = CallableKey()
+        nopickle_data[key.index] = value
+        return key
+    value = copy.deepcopy(value)
+    value.__dict__ = encode(value.__dict__, nopickle_data)
+    return value
+
+
+def decode(value, nopickle_data: Dict[int, None]):
+    if isinstance(value, simple_types):
+        return value
+    if isinstance(value, tuple):
+        return tuple(decode(v, nopickle_data) for v in value)
+    if isinstance(value, list):
+        return list(decode(v, nopickle_data) for v in value)
+    if isinstance(value, dict):
+        return dict({decode(k, nopickle_data):decode(v, nopickle_data) for k, v in value.items()})
+    if isinstance(value, Key):
+        if value.index in nopickle_data:
+            return nopickle_data[value.index]
+        raise ValueError("Not found key %s" % value.index)
+    if dataclasses.is_dataclass(value):
+        return value.__class__(**decode(dataclasses.asdict(value), nopickle_data))
+
+    value = copy.deepcopy(value)
+    d = {k: decode(v, nopickle_data) for k, v in value.__dict__.items() if not k.startswith("__")}
+    value.__dict__.update(d)
+    return value
+
+
+def load_value(value, no_pickle_data):
+    ret = pickle.loads(value)
+    return decode(ret, no_pickle_data)
+
+
+def dump_value(value, no_pickle_data=None):
+    if no_pickle_data is None:
+        no_pickle_data = {}
+    value = encode(value, no_pickle_data)
+    return pickle.dumps(value), no_pickle_data
 
 
 class ConstraintsService(rpyc.Service):
@@ -89,15 +196,16 @@ class ConstraintsService(rpyc.Service):
         format_dict = self.format_dict
         return pickle.dumps(format_dict)
 
-    def exposed_call(self, method, args, kwargs):
+    def exposed_call(self, method, no_pickle_data, args, kwargs):
         if method in self.format_dict:
             value = getattr(self.obj, method)
             if callable(value):
                 _method = value
-                _args = pickle.loads(args)
-                _kwargs = pickle.loads(kwargs)
+                _args = load_value(args, no_pickle_data)
+                _kwargs = load_value(kwargs, no_pickle_data)
                 _ret = _method(*_args, **_kwargs)
-                return pickle.dumps(_ret)
+
+                return dump_value(_ret)
             else:
                 raise ValueError("Method %s is not callable!" % method)
         raise ValueError("Method %s is not found!" % method)
@@ -127,14 +235,7 @@ class ConstraintsProxy:
             self.__init()
         return self.__format_dict
 
-    def __getattribute__(self, item):
-        if item.startswith("__"):
-            return super().__getattribute__(item)
-        if item in dir(self):
-            return super().__getattribute__(item)
-
-        if self.format_dict is None:
-            self.__init()
+    def get_remote_attr(self, item):
         if item in self.format_dict:
             _type = self.format_dict[item]
             if _type == "callable":
@@ -143,10 +244,10 @@ class ConstraintsProxy:
 
                 def func(*args, **kwargs):
                     log.debug("Server[%s]: Call remote callable %s success" % (self.__name, item))
-                    _args = pickle.dumps(args)
-                    _kwargs = pickle.dumps(kwargs)
-                    _ret = service.call(item, _args, _kwargs)
-                    return pickle.loads(_ret)
+                    _args, no_pickle_data = dump_value(args)
+                    _kwargs, no_pickle_data = dump_value(kwargs, no_pickle_data)
+                    _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)
+                    return load_value(_ret, ret_no_pickle_data)
                 return func
             else:
                 log.debug("Server[%s]: Get remote variable %s success" % (self.__name, item))
@@ -154,3 +255,13 @@ class ConstraintsProxy:
                 return pickle.loads(value)
         else:
             raise AttributeError("Unknown attr %s!" % item)
+
+    def __getattribute__(self, item):
+        if item.startswith("__"):
+            return super().__getattribute__(item)
+        if item in dir(self):
+            return super().__getattribute__(item)
+
+        if self.format_dict is None:
+            self.__init()
+        return self.get_remote_attr(item)

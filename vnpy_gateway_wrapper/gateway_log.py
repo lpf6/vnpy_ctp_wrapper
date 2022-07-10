@@ -91,6 +91,8 @@ class GatewayTest(BaseGateway):
         if callable(val):
             def fun(*args, **kwargs):
                 log.info("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
+                if val.__name__ == "connect":
+                    super(GatewayTest, self).__getattribute__('event_engine').register("test", super(GatewayTest, self).__getattribute__('on_event'))
                 super(GatewayTest, self).__getattribute__('on_event')(val.__name__, [args, kwargs])
                 return None
             return fun

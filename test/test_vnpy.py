@@ -20,6 +20,7 @@ def main():
     main_engine = MainEngine(event_engine)
     
     main_engine.add_gateway(create_proxy_gateway("117.50.178.225", 18861), "ctp")
+    # main_engine.add_gateway(create_proxy_gateway("127.0.0.1", 18861), "ctp")
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
 

@@ -41,6 +41,9 @@ class EventEngineService(ConstraintsService):
     def exposed_get_gateway_name(self):
         return self.gateway_name
 
+    def get_clazz(self):
+        return self._obj.__class__
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Start vtp wrapper client')
@@ -54,7 +57,7 @@ if __name__ == "__main__":
     service = EventEngineService(EventEngineLog(), "test")
     conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10})
     proxy = ConstraintsProxy(conn.root)
-
+    print(proxy.exchanges)
     proxy.connect({"test": "connect"})
     proxy.query_position()
     proxy.query_account()

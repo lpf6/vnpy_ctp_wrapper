@@ -1,6 +1,7 @@
 from typing import Dict, List, Any
 
 from vnpy.event import EventEngine
+from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
@@ -77,6 +78,7 @@ class GatewayTest(BaseGateway):
     """
     VeighNa用于对接期货CTP柜台的交易接口。
     """
+    exchanges = [Exchange.SSE]
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""

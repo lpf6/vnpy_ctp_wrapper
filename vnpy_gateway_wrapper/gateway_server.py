@@ -24,14 +24,15 @@ class GatewayServices(ConstraintsService):
         super().on_disconnect(conn)
 
     def get_clazz(self):
-        if self._is_test:
-            return GatewayTest
-        self._name: str = self._conn.root.get_gateway_name()
+        self._name = self._conn.root.get_gateway_name()
         if self._name is not None:
             self._name = self._name.lower()
-        if self._name not in self._clazz_map:
-            raise KeyError("Gateway %s not support!" % self._name)
-        self._clazz = self._clazz_map[self._name]
+        if self._is_test:
+            self._clazz = GatewayTest
+        else:
+            if self._name not in self._clazz_map:
+                raise KeyError("Gateway %s not support!" % self._name)
+            self._clazz = self._clazz_map[self._name]
         return get_log_class(self._clazz) if self._is_log else self._clazz
 
 

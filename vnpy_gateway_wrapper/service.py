@@ -10,7 +10,6 @@ from .gateway_log import to_str
 from .utils import log
 
 
-simple_types = tuple([type(None), int, bool, float, bytes, str, complex, type(NotImplemented), type(Ellipsis)])
 callable_index = 0
 
 

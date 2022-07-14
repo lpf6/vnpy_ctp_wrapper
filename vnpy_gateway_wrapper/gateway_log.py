@@ -27,7 +27,7 @@ def to_str(value):
     if callable(value):
         return str(value)
     return "%s%s" % (value.__class__.__name__, to_str(
-        dict({k: v} for k, v in value.__dict__.items() if not k.startswith("__"))))
+        dict({k: v for k, v in value.__dict__.items() if not k.startswith("__")})))
 
 
 

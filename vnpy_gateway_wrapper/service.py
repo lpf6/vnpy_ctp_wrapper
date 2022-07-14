@@ -150,12 +150,11 @@ class ConstraintsService(rpyc.Service):
     def clazz(self):
         if self._clazz is None:
             if self._obj is not None:
-                log.debug("Get clazz from obj")
                 self._clazz = self._obj.__class__
+                log.debug("Get clazz %s from obj" % self._clazz)
             else:
-                log.debug("Get clazz")
                 self._clazz = self.get_clazz()
-                log.debug("Get clazz success")
+                log.debug("Get clazz %s success" % self._clazz)
         return self._clazz
 
     def _init_format_dict(self):
@@ -172,7 +171,7 @@ class ConstraintsService(rpyc.Service):
             v = getattr(self.clazz, d)
             format_dict[d] = "callable" if callable(v) else "variable"
         self._format_dict = format_dict
-        log.debug("Get dict class is None! %s" % self._format_dict)
+        log.debug("Get dict class is ! %s" % self._format_dict)
 
     @property
     def format_dict(self):
@@ -192,8 +191,8 @@ class ConstraintsService(rpyc.Service):
         self._conn = None
 
     def exposed_get_dict(self):
-        log.debug("Server Get dict")
         format_dict = self.format_dict
+        log.debug("Server Get dict %s" % format_dict)
         return pickle.dumps(format_dict)
 
     def exposed_call(self, method, no_pickle_data, args, kwargs):
@@ -223,8 +222,8 @@ class ConstraintsProxy:
         self.__name = self.__class__.__name__
 
     def __init(self):
-        log.debug("Get dict")
         p_format_dict = self.__service.get_dict()
+        log.debug("Get dict %s" % p_format_dict)
         self.__format_dict = pickle.loads(p_format_dict)
         if self.__format_dict is None:
             self.__format_dict = {}

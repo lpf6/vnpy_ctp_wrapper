@@ -1,11 +1,18 @@
 from typing import Dict, List, Any
 
-from vnpy.event import EventEngine
+from vnpy.event import EventEngine, Event
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
 from .utils import log
+
+
+def event_to_str(event: Event):
+    return "Event{%s, %s}" % (event.type, event.data)
+
+
+Event.__str__ = event_to_str
 
 
 def get_log_class(clazz):

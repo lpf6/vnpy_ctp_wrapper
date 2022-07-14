@@ -6,7 +6,7 @@ from typing import Callable, Dict, List
 
 import rpyc
 
-from .gateway_log import to_str
+from .gateway_log import to_str, simple_types
 from .utils import log
 
 

@@ -6,7 +6,8 @@ from typing import Callable, Dict, List
 
 import rpyc
 
-from vnpy_gateway_wrapper.utils import log
+from .gateway_log import to_str
+from .utils import log
 
 
 simple_types = tuple([type(None), int, bool, float, bytes, str, complex, type(NotImplemented), type(Ellipsis)])
@@ -243,7 +244,7 @@ class ConstraintsProxy:
 
                 def func(*args, **kwargs):
                     log.debug("Server[%s]: Call remote callable %s success, args:%s, kwargs:%s"
-                              % (self.__name, item, args, kwargs))
+                              % (self.__name, item, to_str(args), to_str(kwargs)))
                     _args, no_pickle_data = dump_value(args)
                     _kwargs, no_pickle_data = dump_value(kwargs, no_pickle_data)
                     _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)

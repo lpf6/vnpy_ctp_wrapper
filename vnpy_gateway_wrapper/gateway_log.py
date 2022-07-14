@@ -1,3 +1,5 @@
+import copy
+import dataclasses
 from typing import Dict, List, Any
 
 from vnpy.event import EventEngine, Event
@@ -5,7 +7,25 @@ from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
+from .service import simple_types
 from .utils import log
+
+
+def to_str(value):
+    if isinstance(value, simple_types):
+        return value
+    if isinstance(value, tuple):
+        return tuple(to_str(v) for v in value)
+    if isinstance(value, list):
+        return list(to_str(v) for v in value)
+    if isinstance(value, dict):
+        return dict({to_str(k): to_str(v) for k, v in value.items()})
+    if dataclasses.is_dataclass(value):
+        return value.__class__(**to_str(dataclasses.asdict(value)))
+    if callable(value):
+        return str(value)
+    return "%s%s" % (value.__class__.__name__, to_str({k: v} for k, v in value.__dict__.items() if not k.startswith("__")))
+
 
 
 def event_to_str(event: Event):

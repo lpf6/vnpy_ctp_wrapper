@@ -26,7 +26,8 @@ def to_str(value):
         return value.__class__(**to_str(dataclasses.asdict(value)))
     if callable(value):
         return str(value)
-    return "%s%s" % (value.__class__.__name__, to_str({k: v} for k, v in value.__dict__.items() if not k.startswith("__")))
+    return "%s%s" % (value.__class__.__name__, to_str(
+        dict({k: v} for k, v in value.__dict__.items() if not k.startswith("__"))))
 
 
 

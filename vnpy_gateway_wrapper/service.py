@@ -239,11 +239,11 @@ class ConstraintsProxy:
         if item in self.format_dict:
             _type = self.format_dict[item]
             if _type == "callable":
-                log.debug("Server[%s]: Get remote callable %s success" % (self.__name, item))
                 service = self.__service
 
                 def func(*args, **kwargs):
-                    log.debug("Server[%s]: Call remote callable %s success" % (self.__name, item))
+                    log.debug("Server[%s]: Call remote callable %s success, args:%s, kwargs:%s"
+                              % (self.__name, item, args, kwargs))
                     _args, no_pickle_data = dump_value(args)
                     _kwargs, no_pickle_data = dump_value(kwargs, no_pickle_data)
                     _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)
@@ -254,7 +254,7 @@ class ConstraintsProxy:
                 value = self.__service.get(item)
                 return pickle.loads(value)
         else:
-            raise AttributeError("Unknown attr %s!" % item)
+            raise AttributeError("Server[%s]: Unknown remote attr %s!" % (self.__name, item))
 
     def __getattribute__(self, item):
         if item.startswith("__"):

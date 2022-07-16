@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+from vnpy.event import EventEngine
+
 from .service import ConstraintsProxy, ConstraintsService
 from .utils import log
 from .gateway_log import get_log_class, GatewayTest, to_str
@@ -38,6 +40,22 @@ class GatewayServices(ConstraintsService):
         return get_log_class(self._clazz) if self._is_log else self._clazz
 
 
+def get_ctp(event_engine: EventEngine, gateway_name: str):
+    try:
+        from vnpy_ctp import CtpGateway
+        return CtpGateway(event_engine, gateway_name)
+    except ImportError:
+        log.error("Not install vnpy-ctp")
+
+
+def get_tts(event_engine: EventEngine, gateway_name: str):
+    try:
+        from vnpy_tts import TtsGateway
+        return TtsGateway(event_engine, gateway_name)
+    except ImportError:
+        log.error("Not install vnpy-tts")
+
+
 class CtpGatewayServices(GatewayServices):
 
     gateway_class = None
@@ -48,16 +66,8 @@ class CtpGatewayServices(GatewayServices):
     def get_gateway_class_map() -> dict:
         if CtpGatewayServices.gateway_class is None:
             CtpGatewayServices.gateway_class = {}
-            try:
-                from vnpy_ctp import CtpGateway
-                CtpGatewayServices.gateway_class["ctp"] = CtpGateway
-            except ImportError:
-                log.error("Not install vnpy-ctp")
-            try:
-                from vnpy_tts import TtsGateway
-                CtpGatewayServices.gateway_class["tts"] = TtsGateway
-            except ImportError:
-                log.error("Not install vnpy-tts")
+            CtpGatewayServices.gateway_class["ctp"] = get_ctp
+            CtpGatewayServices.gateway_class["tts"] = get_tts
             CtpGatewayServices.gateway_class["test"] = GatewayTest
 
         return CtpGatewayServices.gateway_class

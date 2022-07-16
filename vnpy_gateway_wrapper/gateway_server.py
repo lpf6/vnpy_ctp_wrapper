@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
 from .service import ConstraintsProxy, ConstraintsService
 from .utils import log
 from .gateway_log import get_log_class, GatewayTest, to_str

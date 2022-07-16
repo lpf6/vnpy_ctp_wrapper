@@ -30,9 +30,10 @@ class GatewayServices(ConstraintsService):
         if self._is_test:
             self._clazz = GatewayTest
         else:
-            if self._name not in self._clazz_map:
-                raise KeyError("Gateway %s not support!" % self._name)
-            self._clazz = self._clazz_map[self._name.lower()]
+            name = self._name.lower()
+            if name not in self._clazz_map:
+                raise KeyError("Gateway %s not support!" % name)
+            self._clazz = self._clazz_map[name]
         log.info("Get %s gateway: %s" % (self._name, to_str(self._clazz)))
         return get_log_class(self._clazz) if self._is_log else self._clazz
 

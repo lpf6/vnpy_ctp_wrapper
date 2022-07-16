@@ -1,6 +1,6 @@
 from .service import ConstraintsProxy, ConstraintsService
 from .utils import log
-from .gateway_log import get_log_class, GatewayTest
+from .gateway_log import get_log_class, GatewayTest, to_str
 
 
 class GatewayServices(ConstraintsService):
@@ -33,6 +33,7 @@ class GatewayServices(ConstraintsService):
             if self._name not in self._clazz_map:
                 raise KeyError("Gateway %s not support!" % self._name)
             self._clazz = self._clazz_map[self._name]
+        log.info("Get %s gateway: %s" % (self._name, to_str(self._clazz)))
         return get_log_class(self._clazz) if self._is_log else self._clazz
 
 

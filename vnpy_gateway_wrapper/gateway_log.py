@@ -70,7 +70,7 @@ class GatewayLog(BaseGateway):
             def fun(*args, **kwargs):
                 log.debug("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
                 if val.__name__ in self.__proxy_method:
-                    super(self).__getattribute__(attr)(*args, **kwargs)
+                    super(GatewayLog, self).__getattribute__(attr)(*args, **kwargs)
                 if self.gateway is None:
                     log.error("impl gateway is None")
                     return None

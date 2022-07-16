@@ -171,7 +171,7 @@ class ConstraintsService(rpyc.Service):
             v = getattr(self.clazz, d)
             format_dict[d] = "callable" if callable(v) else "variable"
         self._format_dict = format_dict
-        log.debug("Get dict class is ! %s" % self._format_dict)
+        log.debug("Get dict class is %s" % self._format_dict)
 
     @property
     def format_dict(self):
@@ -231,9 +231,8 @@ class ConstraintsService(rpyc.Service):
 
 class ConstraintsProxy:
     def __init__(self, service: ConstraintsService):
-        self.__service = service
-
         self.__format_dict = None
+        self.__service = service
 
     def __init(self):
         p_format_dict = self.__service.get_dict()
@@ -277,6 +276,6 @@ class ConstraintsProxy:
         if item in dir(self):
             return super().__getattribute__(item)
 
-        if self.format_dict is None:
+        if self.__format_dict is None:
             self.__init()
         return self.get_remote_attr(item)

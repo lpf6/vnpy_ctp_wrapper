@@ -182,12 +182,14 @@ class ConstraintsService(rpyc.Service):
 
     def on_connect(self, conn):
         self._conn = conn
+        log.info("Service %s connect %s." % (self.__class__.__name__, conn))
 
     def on_disconnect(self, conn):
         if self._remove_obj:
             self.remove_obj()
             self._obj = None
             self._format_dict = None
+        log.info("Service %s disconnect %s." % (self.__class__.__name__, conn))
         self._conn = None
 
     def exposed_get_dict(self):

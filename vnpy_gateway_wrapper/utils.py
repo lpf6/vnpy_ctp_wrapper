@@ -11,7 +11,7 @@ def get_log():
     ch.setLevel(logging.DEBUG)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
-        '%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+        '%(asctime)s - %(filename)s:%(lineno)d[%(thread)d] - %(levelname)s: %(message)s')
     ch.setFormatter(formatter)
     fh.setFormatter(formatter)
     # add the handlers to logger

@@ -68,7 +68,7 @@ class GatewayLog(BaseGateway):
         val = self.gateway.__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):
-                log.debug("func: %s, args: %s, kwargs: %s" % (attr, args, kwargs))
+                log.debug("%s.%s(args=%s, kwargs=%s)" % (self.gateway, attr, args, kwargs))
                 if attr in self.__proxy_method:
                     super(GatewayLog, self).__getattribute__(attr)(*args, **kwargs)
                 if self.gateway is None:

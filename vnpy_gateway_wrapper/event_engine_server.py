@@ -5,6 +5,8 @@ import argparse
 import json
 import os
 import sys
+import time
+
 sys.path.append(os.path.dirname(__file__))
 
 import rpyc
@@ -62,6 +64,8 @@ if __name__ == "__main__":
     proxy = ConstraintsProxy(conn.root)
     print(proxy.exchanges)
     proxy.connect({'用户名': '2865', '密码': '123456', '经纪商代码': '', '交易服务器': 'tcp://122.51.136.165:20002', '行情服务器': 'tcp://122.51.136.165:20004', '产品名称': '', '授权编码': ''})
+
+    time.sleep(10)
     # proxy.query_position()
     # proxy.query_account()
     # proxy.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))

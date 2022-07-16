@@ -265,8 +265,9 @@ class ConstraintsProxy:
                 return func
             else:
                 value = self.__service.get(item)
-                log.debug("Client[%s]: Get %s=%s" % (self, item, to_str(value)))
-                return pickle.loads(value)
+                ret = pickle.loads(value)
+                log.debug("Client[%s]: Get %s=%s" % (self, item, to_str(ret)))
+                return ret
         else:
             raise AttributeError("Client[%s]: Unknown remote attr %s!" % (self, item))
 

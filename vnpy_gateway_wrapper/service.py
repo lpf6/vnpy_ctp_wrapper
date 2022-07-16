@@ -182,19 +182,19 @@ class ConstraintsService(rpyc.Service):
 
     def on_connect(self, conn):
         self._conn = conn
-        log.info("Service %s connect %s." % (self.__class__.__name__, conn))
+        log.info("Server[%s]: connect %s." % (self, conn))
 
     def on_disconnect(self, conn):
         if self._remove_obj:
             self.remove_obj()
             self._obj = None
             self._format_dict = None
-        log.info("Service %s disconnect %s." % (self.__class__.__name__, conn))
+        log.info("Server[%s]: disconnect %s." % (self, conn))
         self._conn = None
 
     def exposed_get_dict(self):
         format_dict = self.format_dict
-        log.debug("Server Get dict %s" % format_dict)
+        log.debug("Server[%s]: Get dict %s" % (self, format_dict))
         return pickle.dumps(format_dict)
 
     def call_method(self, method, no_pickle_data=None, args=None, kwargs=None):
@@ -210,6 +210,8 @@ class ConstraintsService(rpyc.Service):
             _args = load_value(args, no_pickle_data)
             _kwargs = load_value(kwargs, no_pickle_data)
             _ret = _method(*_args, **_kwargs)
+            log.debug("Server[%s]: call method %s=%s(args=%s, kwargs=%s)" %
+                      (self, to_str(_ret), method, to_str(_args), to_str(_kwargs)))
 
             return dump_value(_ret)
         else:
@@ -223,6 +225,7 @@ class ConstraintsService(rpyc.Service):
 
     def exposed_get(self, name):
         value = getattr(self.obj, name)
+        log.debug("Server[%s]: Get %s=%s" % (self, name, to_str(value)))
         return pickle.dumps(value)
 
 
@@ -231,12 +234,11 @@ class ConstraintsProxy:
         self.__service = service
 
         self.__format_dict = None
-        self.__name = self.__class__.__name__
 
     def __init(self):
         p_format_dict = self.__service.get_dict()
         self.__format_dict = pickle.loads(p_format_dict)
-        log.debug("Get dict %s" % self.__format_dict)
+        log.debug("Client[%s]: Get dict %s" % (self, self.__format_dict))
         if self.__format_dict is None:
             self.__format_dict = {}
 
@@ -253,19 +255,20 @@ class ConstraintsProxy:
                 service = self.__service
 
                 def func(*args, **kwargs):
-                    log.debug("Server[%s]: Call remote callable %s success, args:%s, kwargs:%s"
-                              % (self.__name, item, to_str(args), to_str(kwargs)))
                     _args, no_pickle_data = dump_value(args)
                     _kwargs, no_pickle_data = dump_value(kwargs, no_pickle_data)
                     _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)
-                    return load_value(_ret, ret_no_pickle_data)
+                    ret = load_value(_ret, ret_no_pickle_data)
+                    log.debug("Client[%s]: call method %s=%s(args=%s, kwargs=%s)" %
+                              (self, to_str(_ret), item, to_str(_args), to_str(_kwargs)))
+                    return ret
                 return func
             else:
-                log.debug("Server[%s]: Get remote variable %s success" % (self.__name, item))
                 value = self.__service.get(item)
+                log.debug("Client[%s]: Get %s=%s" % (self, item, to_str(value)))
                 return pickle.loads(value)
         else:
-            raise AttributeError("Server[%s]: Unknown remote attr %s!" % (self.__name, item))
+            raise AttributeError("Client[%s]: Unknown remote attr %s!" % (self, item))
 
     def __getattribute__(self, item):
         if item.startswith("__"):

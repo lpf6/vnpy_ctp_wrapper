@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 from vnpy.event import EventEngine
 from vnpy_tts import TtsGateway
 

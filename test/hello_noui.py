@@ -78,7 +78,9 @@ def run_child():
     sleep(10)
 
     rpc_engine.start("tcp://*:4021", "tcp://*:4022")
-    main_engine.write_log("CTA策略初始化完成")
+    main_engine.write_log("rpc服务器初始化成功")
+    main_engine.write_log("行情服务器：%s" % rpc_engine.pub_address)
+    main_engine.write_log("交易服务器：%s" % rpc_engine.rep_address)
 
     # cta_engine.init_all_strategies()
     # sleep(60)   # Leave enough time to complete strategy initialization

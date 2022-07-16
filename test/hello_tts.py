@@ -4,8 +4,8 @@
 from vnpy.event import EventEngine
 from vnpy_tts import TtsGateway
 
-username = "2865"
-password = "123456"
+username = ""
+password = ""
 
 
 if __name__ == "__main__":

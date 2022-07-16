@@ -56,9 +56,10 @@ class GatewayLog(BaseGateway):
         if clazz is not None:
             log.info("impl gateway is: %s" % clazz)
             self.gateway = clazz(event_engine, gateway_name)
+        self.__proxy_method = {"connect"}
 
     def __getattribute__(self, attr):
-        if attr == "gateway" or attr.startswith("__"):
+        if attr == "gateway" or attr.startswith("__") or attr.startswith("_GatewayLog__"):
             return super().__getattribute__(attr)
         if self.gateway is None:
             log.error("impl gateway is None")
@@ -68,6 +69,8 @@ class GatewayLog(BaseGateway):
         if callable(val):
             def fun(*args, **kwargs):
                 log.debug("func: %s, args: %s, kwargs: %s" % (val.__name__, args, kwargs))
+                if val.__name__ in self.__proxy_method:
+                    super().__getattribute__(attr)(*args, **kwargs)
                 if self.gateway is None:
                     log.error("impl gateway is None")
                     return None
@@ -83,7 +86,18 @@ class GatewayLog(BaseGateway):
         return self.gateway.__setattr__(key, value)
 
     def connect(self, setting: dict) -> None:
-        pass
+        default_setting: Dict[str, str] = {
+            "用户名": "",
+            "密码": "",
+            "经纪商代码": "",
+            "交易服务器": "",
+            "行情服务器": "",
+            "产品名称": "",
+            "授权编码": ""
+        }
+        for k, v in setting.items():
+            if k not in default_setting:
+                log.error("Unknown key for connect: %s:%s" % (k, v))
 
     def close(self) -> None:
         pass

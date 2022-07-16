@@ -197,18 +197,28 @@ class ConstraintsService(rpyc.Service):
         log.debug("Server Get dict %s" % format_dict)
         return pickle.dumps(format_dict)
 
+    def call_method(self, method, no_pickle_data=None, args=None, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+        if args is None:
+            args = []
+        if no_pickle_data is None:
+            no_pickle_data = {}
+
+        if callable(method):
+            _method = method
+            _args = load_value(args, no_pickle_data)
+            _kwargs = load_value(kwargs, no_pickle_data)
+            _ret = _method(*_args, **_kwargs)
+
+            return dump_value(_ret)
+        else:
+            raise ValueError("Method %s is not callable!" % method)
+
     def exposed_call(self, method, no_pickle_data, args, kwargs):
         if method in self.format_dict:
             value = getattr(self.obj, method)
-            if callable(value):
-                _method = value
-                _args = load_value(args, no_pickle_data)
-                _kwargs = load_value(kwargs, no_pickle_data)
-                _ret = _method(*_args, **_kwargs)
-
-                return dump_value(_ret)
-            else:
-                raise ValueError("Method %s is not callable!" % method)
+            return self.call_method(value, no_pickle_data, args, kwargs)
         raise ValueError("Method %s is not found!" % method)
 
     def exposed_get(self, name):

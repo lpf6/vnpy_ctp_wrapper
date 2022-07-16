@@ -67,5 +67,6 @@ if __name__ == "__main__":
     # proxy.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))
     # proxy.send_order(OrderRequest("testOrder", Exchange.COMEX, Direction.LONG, OrderType.LIMIT, 12345, 12.23))
     # proxy.cancel_order(CancelRequest("1234", "testOrder", Exchange.COMEX))
+    input("Pause, enter any keys to Continue.")
     proxy.close()
     conn.close()

@@ -7,6 +7,8 @@ from logging import INFO
 from vnpy.event import EventEngine
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine
+from vnpy_rpcservice import RpcServiceApp
+from vnpy_rpcservice.rpc_service import RpcEngine
 
 from vnpy_tts import TtsGateway
 from vnpy_ctastrategy import CtaStrategyApp
@@ -19,8 +21,8 @@ SETTINGS["log.console"] = True
 
 
 ctp_setting = {
-    "用户名": "",
-    "密码": "",
+    "用户名": "2865",
+    "密码": "123456",
     '经纪商代码': '',
     '交易服务器': 'tcp://122.51.136.165:20002',
     '行情服务器': 'tcp://122.51.136.165:20004',
@@ -40,6 +42,7 @@ NIGHT_END = time(2, 45)
 
 def check_trading_period():
     """"""
+    return True
     current_time = datetime.now().time()
 
     trading = False
@@ -62,7 +65,7 @@ def run_child():
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
     main_engine.add_gateway(TtsGateway)
-    cta_engine = main_engine.add_app(CtaStrategyApp)
+    rpc_engine: RpcEngine = main_engine.add_app(RpcServiceApp)
     main_engine.write_log("主引擎创建成功")
 
     log_engine = main_engine.get_engine("log")
@@ -74,15 +77,15 @@ def run_child():
 
     sleep(10)
 
-    cta_engine.init_engine()
+    rpc_engine.start("tcp://*:4021", "tcp://*:4022")
     main_engine.write_log("CTA策略初始化完成")
 
-    cta_engine.init_all_strategies()
-    sleep(60)   # Leave enough time to complete strategy initialization
-    main_engine.write_log("CTA策略全部初始化")
-
-    cta_engine.start_all_strategies()
-    main_engine.write_log("CTA策略全部启动")
+    # cta_engine.init_all_strategies()
+    # sleep(60)   # Leave enough time to complete strategy initialization
+    # main_engine.write_log("CTA策略全部初始化")
+    #
+    # cta_engine.start_all_strategies()
+    # main_engine.write_log("CTA策略全部启动")
 
     while True:
         sleep(10)

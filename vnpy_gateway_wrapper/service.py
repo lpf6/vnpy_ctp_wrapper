@@ -260,7 +260,7 @@ class ConstraintsProxy:
                     _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)
                     ret = load_value(_ret, ret_no_pickle_data)
                     log.debug("Client[%s]: call method %s=%s(args=%s, kwargs=%s)" %
-                              (self, to_str(_ret), item, to_str(_args), to_str(_kwargs)))
+                              (self, to_str(ret), item, to_str(args), to_str(kwargs)))
                     return ret
                 return func
             else:

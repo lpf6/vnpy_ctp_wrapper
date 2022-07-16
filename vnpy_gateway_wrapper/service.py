@@ -223,8 +223,8 @@ class ConstraintsProxy:
 
     def __init(self):
         p_format_dict = self.__service.get_dict()
-        log.debug("Get dict %s" % p_format_dict)
         self.__format_dict = pickle.loads(p_format_dict)
+        log.debug("Get dict %s" % self.__format_dict)
         if self.__format_dict is None:
             self.__format_dict = {}
 

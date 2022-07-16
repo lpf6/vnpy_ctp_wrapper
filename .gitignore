@@ -1,3 +1,4 @@
 .idea/
 __pycache__
 vnpy_gateway_wrapper.log
+/build

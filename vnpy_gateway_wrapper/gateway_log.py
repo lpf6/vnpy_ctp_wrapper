@@ -81,7 +81,7 @@ class GatewayLog(BaseGateway):
         return val
 
     def __setattr__(self, key, value):
-        if key == "gateway" or key.startswith("__"):
+        if key == "gateway" or key.startswith("__") or key.startswith("_GatewayLog__"):
             return super().__setattr__(key, value)
         return self.gateway.__setattr__(key, value)
 

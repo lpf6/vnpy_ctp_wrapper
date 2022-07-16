@@ -52,11 +52,11 @@ class GatewayLog(BaseGateway):
 
     def __init__(self, clazz, event_engine: EventEngine, gateway_name: str) -> None:
         """构造函数"""
+        self.__proxy_method = {"connect"}
         self.gateway = None
         if clazz is not None:
             log.info("impl gateway is: %s" % clazz)
             self.gateway = clazz(event_engine, gateway_name)
-        self.__proxy_method = {"connect"}
 
     def __getattribute__(self, attr):
         if attr == "gateway" or attr.startswith("__") or attr.startswith("_GatewayLog__"):

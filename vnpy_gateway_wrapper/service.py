@@ -1,12 +1,13 @@
 import abc
 import copy
 import dataclasses
+import datetime
 import pickle
 from typing import Callable, Dict, List
 
 import rpyc
 
-from .gateway_log import to_str, simple_types
+from .gateway_log import to_str, simple_types, datetime_types
 from .utils import log
 
 
@@ -39,25 +40,27 @@ class CallableKey(Key):
 
 
 @dataclasses.dataclass
+class TypeStub:
+
+    def convert(self):
+        return None
+
+
+@dataclasses.dataclass
+class DatetimeStub(TypeStub):
+    time: float
+
+    def __init__(self, t: datetime.datetime):
+        self.time = t.timestamp()
+
+    def convert(self):
+        return datetime.datetime.fromtimestamp(self.time)
+
+
+@dataclasses.dataclass
 class VariableKey(Key):
     def __hash__(self):
         return super().__hash__()
-
-
-class CallableProxy:
-    def __init__(self, server, key: CallableKey):
-        self.__key = key
-        self.__server = server
-
-    def __call__(self, *args, **kwargs):
-        self.__server.call_callable(self.__key, *args, **kwargs)
-
-
-class CallableCallback(abc.ABC):
-
-    @abc.abstractmethod
-    def callback_callable(self, key: CallableKey, *args, **kwargs):
-        pass
 
 
 def encode(value, nopickle_data: Dict[int, None]):
@@ -69,6 +72,8 @@ def encode(value, nopickle_data: Dict[int, None]):
         return list(encode(v, nopickle_data) for v in value)
     if isinstance(value, dict):
         return dict({encode(k, nopickle_data): encode(v, nopickle_data) for k, v in value.items()})
+    if isinstance(value, datetime.datetime):
+        return DatetimeStub(value)
     if callable(value):
         key = CallableKey()
         nopickle_data[key.index] = value
@@ -91,6 +96,8 @@ def decode(value, nopickle_data: Dict[int, None]):
         if value.index in nopickle_data:
             return nopickle_data[value.index]
         raise ValueError("Not found key %s" % value.index)
+    if isinstance(value, TypeStub):
+        return value.convert()
 
     value = copy.deepcopy(value)
     d = {k: decode(v, nopickle_data) for k, v in value.__dict__.items() if not k.startswith("__")}

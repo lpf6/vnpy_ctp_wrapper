@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import datetime
 from typing import Dict, List, Any
 
 from vnpy.event import EventEngine, Event
@@ -11,6 +12,12 @@ from .utils import log
 
 
 simple_types = tuple([type(None), int, bool, float, bytes, str, complex, type(NotImplemented), type(Ellipsis)])
+datetime_types = tuple([datetime.datetime, datetime.date])
+
+
+def date_to_str(date: datetime.datetime) -> str:
+    date_format = "%Y-%m-%d %H:%M:%S" if isinstance(date, datetime.datetime) else "%Y-%m-%d"
+    return date.strftime(date_format)
 
 
 def to_str(value):
@@ -22,6 +29,8 @@ def to_str(value):
         return list(to_str(v) for v in value)
     if isinstance(value, dict):
         return dict({to_str(k): to_str(v) for k, v in value.items()})
+    if isinstance(value, datetime_types):
+        return date_to_str(value)
     if dataclasses.is_dataclass(value):
         return "%s%s" % (value.__class__.__name__, to_str(dataclasses.asdict(value)))
     if callable(value):

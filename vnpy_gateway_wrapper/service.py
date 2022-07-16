@@ -197,7 +197,7 @@ class ConstraintsService(rpyc.Service):
         log.debug("Server[%s]: Get dict %s" % (self, format_dict))
         return pickle.dumps(format_dict)
 
-    def call_method(self, method, no_pickle_data=None, args=None, kwargs=None):
+    def call_method(self, method, name, no_pickle_data=None, args=None, kwargs=None):
         if kwargs is None:
             kwargs = {}
         if args is None:
@@ -211,7 +211,7 @@ class ConstraintsService(rpyc.Service):
             _kwargs = load_value(kwargs, no_pickle_data)
             _ret = _method(*_args, **_kwargs)
             log.debug("Server[%s]: call method %s=%s(args=%s, kwargs=%s)" %
-                      (self, to_str(_ret), method, to_str(_args), to_str(_kwargs)))
+                      (self, to_str(_ret), name, to_str(_args), to_str(_kwargs)))
 
             return dump_value(_ret)
         else:
@@ -220,7 +220,7 @@ class ConstraintsService(rpyc.Service):
     def exposed_call(self, method, no_pickle_data, args, kwargs):
         if method in self.format_dict:
             value = getattr(self.obj, method)
-            return self.call_method(value, no_pickle_data, args, kwargs)
+            return self.call_method(value, method, no_pickle_data, args, kwargs)
         raise ValueError("Method %s is not found!" % method)
 
     def exposed_get(self, name):

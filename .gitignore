@@ -2,3 +2,4 @@
 __pycache__
 vnpy_gateway_wrapper.log
 /build
+*.egg-info

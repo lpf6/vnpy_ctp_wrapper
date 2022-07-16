@@ -44,6 +44,7 @@ class EventEngineService(ConstraintsService):
         self.gateway_name = gateway_name
 
     def exposed_get_gateway_name(self):
+        log.debug("Server[%s]: gateway_name=%s" % (self, self.gateway_name))
         return self.gateway_name
 
     def get_clazz(self):
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     log.info("Client run with args: %s" % args)
 
-    service = EventEngineService(EventEngineLog(), "tts")
+    service = EventEngineService(EventEngineLog(), "TTS")
     conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10, "allow_pickle": True})
     proxy = ConstraintsProxy(conn.root)
     print(proxy.exchanges)

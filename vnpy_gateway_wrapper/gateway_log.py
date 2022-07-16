@@ -8,8 +8,7 @@ from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import CancelRequest, OrderRequest, SubscribeRequest
 
-from .utils import log
-
+from .utils import log, is_debug
 
 simple_types = tuple([type(None), int, bool, float, bytes, str, complex, type(NotImplemented), type(Ellipsis)])
 datetime_types = tuple([datetime.datetime, datetime.date])
@@ -77,7 +76,8 @@ class GatewayLog(BaseGateway):
         val = self.gateway.__getattribute__(attr)
         if callable(val):
             def fun(*args, **kwargs):
-                log.debug("%s.%s(args=%s, kwargs=%s)" % (self.gateway, attr, args, kwargs))
+                if is_debug():
+                    log.debug("%s.%s(args=%s, kwargs=%s)" % (self.gateway, attr, args, kwargs))
                 if attr in self.__proxy_method:
                     super(GatewayLog, self).__getattribute__(attr)(*args, **kwargs)
                 if self.gateway is None:
@@ -86,7 +86,8 @@ class GatewayLog(BaseGateway):
                 return val(*args, **kwargs)
             return fun
 
-        log.debug("get name: %s, val: %s" % (attr, val))
+        if is_debug():
+            log.debug("get name: %s, val: %s" % (attr, val))
         return val
 
     def __setattr__(self, key, value):

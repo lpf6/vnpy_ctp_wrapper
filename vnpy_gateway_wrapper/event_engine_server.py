@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import argparse
+import datetime
 import json
 import os
 import sys
@@ -15,7 +16,7 @@ from vnpy.trader.constant import Exchange, Direction, OrderType
 from vnpy.trader.object import SubscribeRequest, OrderRequest, CancelRequest, OrderData, QuoteRequest, BarData, \
     HistoryRequest, ContractData, LogData, QuoteData, AccountData, PositionData, TradeData, TickData
 
-from .utils import log
+from .utils import log, is_debug
 from .service import ConstraintsService, ConstraintsProxy
 
 
@@ -44,7 +45,8 @@ class EventEngineService(ConstraintsService):
         self.gateway_name = gateway_name
 
     def exposed_get_gateway_name(self):
-        log.debug("Server[%s]: gateway_name=%s" % (self, self.gateway_name))
+        if is_debug():
+            log.debug("Server[%s]: gateway_name=%s" % (self, self.gateway_name))
         return self.gateway_name
 
     def get_clazz(self):
@@ -64,7 +66,7 @@ if __name__ == "__main__":
     conn = rpyc.connect(args.hostname, args.port, service=service, config={"sync_request_timeout": 60*10, "allow_pickle": True})
     proxy = ConstraintsProxy(conn.root)
     print(proxy.exchanges)
-    proxy.connect({'test': "connect"})
+    proxy.connect({'test': "connect", "time": datetime.datetime.now()})
     proxy.query_position()
     proxy.query_account()
     proxy.subscribe(SubscribeRequest("testSubscribe", Exchange.COMEX))

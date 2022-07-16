@@ -1,14 +1,20 @@
 import logging
 
 
+log_level = logging.INFO
+
+def is_debug():
+    return log_level <= logging.DEBUG
+
+
 def get_log():
     log = logging.getLogger("vnpy_gateway_wrapper")
-    log.setLevel(logging.DEBUG)
+    log.setLevel(log_level)
     fh = logging.FileHandler('vnpy_gateway_wrapper.log')
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(log_level)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(log_level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(filename)s:%(lineno)d[%(thread)d] - %(levelname)s: %(message)s')

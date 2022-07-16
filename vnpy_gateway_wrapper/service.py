@@ -8,8 +8,7 @@ from typing import Callable, Dict, List
 import rpyc
 
 from .gateway_log import to_str, simple_types, datetime_types
-from .utils import log
-
+from .utils import log, is_debug
 
 callable_index = 0
 
@@ -138,7 +137,8 @@ class ConstraintsService(rpyc.Service):
 
     def _init_obj(self):
         if self._obj is None:
-            log.debug("Create new obj")
+            if is_debug():
+                log.debug("Create new obj")
             self._obj = self.create_obj()
             if self._obj is None:
                 log.error("Service[%s] on_connect a None obj! " % self.__class__.__name__)
@@ -154,15 +154,18 @@ class ConstraintsService(rpyc.Service):
         if self._clazz is None:
             if self._obj is not None:
                 self._clazz = self._obj.__class__
-                log.debug("Get clazz %s from obj" % self._clazz)
+                if is_debug():
+                    log.debug("Get clazz %s from obj" % self._clazz)
             else:
                 self._clazz = self.get_clazz()
-                log.debug("Get clazz %s success" % self._clazz)
+                if is_debug():
+                    log.debug("Get clazz %s success" % self._clazz)
         return self._clazz
 
     def _init_format_dict(self):
         if self.clazz is None:
-            log.debug("Get dict class is None!")
+            if is_debug():
+                log.debug("Get dict class is None!")
             self._format_dict = {}
             return
 
@@ -174,7 +177,8 @@ class ConstraintsService(rpyc.Service):
             v = getattr(self.clazz, d)
             format_dict[d] = "callable" if callable(v) else "variable"
         self._format_dict = format_dict
-        log.debug("Get dict class is %s" % self._format_dict)
+        if is_debug():
+            log.debug("Get dict class is %s" % self._format_dict)
 
     @property
     def format_dict(self):
@@ -197,7 +201,8 @@ class ConstraintsService(rpyc.Service):
 
     def exposed_get_dict(self):
         format_dict = self.format_dict
-        log.debug("Server[%s]: Get dict %s" % (self, format_dict))
+        if is_debug():
+            log.debug("Server[%s]: Get dict %s" % (self, format_dict))
         return pickle.dumps(format_dict)
 
     def call_method(self, method, name, no_pickle_data=None, args=None, kwargs=None):
@@ -213,8 +218,9 @@ class ConstraintsService(rpyc.Service):
             _args = load_value(args, no_pickle_data)
             _kwargs = load_value(kwargs, no_pickle_data)
             _ret = _method(*_args, **_kwargs)
-            log.debug("Server[%s]: call method %s=%s(args=%s, kwargs=%s)" %
-                      (self, to_str(_ret), name, to_str(_args), to_str(_kwargs)))
+            if is_debug():
+                log.debug("Server[%s]: call method %s=%s(args=%s, kwargs=%s)" %
+                          (self, to_str(_ret), name, to_str(_args), to_str(_kwargs)))
 
             return dump_value(_ret)
         else:
@@ -228,7 +234,8 @@ class ConstraintsService(rpyc.Service):
 
     def exposed_get(self, name):
         value = getattr(self.obj, name)
-        log.debug("Server[%s]: Get %s=%s" % (self, name, to_str(value)))
+        if is_debug():
+            log.debug("Server[%s]: Get %s=%s" % (self, name, to_str(value)))
         return pickle.dumps(value)
 
 
@@ -240,7 +247,8 @@ class ConstraintsProxy:
     def __init(self):
         p_format_dict = self.__service.get_dict()
         self.__format_dict = pickle.loads(p_format_dict)
-        log.debug("Client[%s]: Get dict %s" % (self, self.__format_dict))
+        if is_debug():
+            log.debug("Client[%s]: Get dict %s" % (self, self.__format_dict))
         if self.__format_dict is None:
             self.__format_dict = {}
 
@@ -261,14 +269,16 @@ class ConstraintsProxy:
                     _kwargs, no_pickle_data = dump_value(kwargs, no_pickle_data)
                     _ret, ret_no_pickle_data = service.call(item, no_pickle_data, _args, _kwargs)
                     ret = load_value(_ret, ret_no_pickle_data)
-                    log.debug("Client[%s]: call method %s=%s(args=%s, kwargs=%s)" %
+                    if is_debug():
+                        log.debug("Client[%s]: call method %s=%s(args=%s, kwargs=%s)" %
                               (self, to_str(ret), item, to_str(args), to_str(kwargs)))
                     return ret
                 return func
             else:
                 value = self.__service.get(item)
                 ret = pickle.loads(value)
-                log.debug("Client[%s]: Get %s=%s" % (self, item, to_str(ret)))
+                if is_debug():
+                    log.debug("Client[%s]: Get %s=%s" % (self, item, to_str(ret)))
                 return ret
         else:
             raise AttributeError("Client[%s]: Unknown remote attr %s!" % (self, item))

@@ -23,7 +23,7 @@ def to_str(value):
     if isinstance(value, dict):
         return dict({to_str(k): to_str(v) for k, v in value.items()})
     if dataclasses.is_dataclass(value):
-        return value.__class__(**to_str(dataclasses.asdict(value)))
+        return "%s%s" % (value.__class__.__name__, to_str(dataclasses.asdict(value)))
     if callable(value):
         return str(value)
     return "%s%s" % (value.__class__.__name__, to_str(

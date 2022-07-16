@@ -69,8 +69,6 @@ def encode(value, nopickle_data: Dict[int, None]):
         return list(encode(v, nopickle_data) for v in value)
     if isinstance(value, dict):
         return dict({encode(k, nopickle_data): encode(v, nopickle_data) for k, v in value.items()})
-    if dataclasses.is_dataclass(value):
-        return value.__class__(**encode(dataclasses.asdict(value), nopickle_data))
     if callable(value):
         key = CallableKey()
         nopickle_data[key.index] = value
@@ -93,8 +91,6 @@ def decode(value, nopickle_data: Dict[int, None]):
         if value.index in nopickle_data:
             return nopickle_data[value.index]
         raise ValueError("Not found key %s" % value.index)
-    if dataclasses.is_dataclass(value):
-        return value.__class__(**decode(dataclasses.asdict(value), nopickle_data))
 
     value = copy.deepcopy(value)
     d = {k: decode(v, nopickle_data) for k, v in value.__dict__.items() if not k.startswith("__")}
